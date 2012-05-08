@@ -1,0 +1,307 @@
+diff -Ncr testlink-1.9.3.orig/cfg/tl_fckeditor_config.js testlink-1.9.3/cfg/tl_fckeditor_config.js
+*** testlink-1.9.3.orig/cfg/tl_fckeditor_config.js	Sat Jul  2 08:33:18 2011
+--- testlink-1.9.3/cfg/tl_fckeditor_config.js	Mon Sep 26 09:26:30 2011
+***************
+*** 68,71 ****
+  //FCKConfig.FlashBrowserURL = '../../../ckfinder/ckfinder.html?type=Flash';
+  //FCKConfig.LinkUploadURL = '../../../ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Files';
+  //FCKConfig.ImageUploadURL = '../../../ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Images';
+! //FCKConfig.FlashUploadURL = '../../../ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Flash';
+\ No newline at end of file
+--- 68,85 ----
+  //FCKConfig.FlashBrowserURL = '../../../ckfinder/ckfinder.html?type=Flash';
+  //FCKConfig.LinkUploadURL = '../../../ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Files';
+  //FCKConfig.ImageUploadURL = '../../../ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Images';
+! //FCKConfig.FlashUploadURL = '../../../ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Flash';
+! 
+! // Added jetmore 201108:
+! 
+! // use 'div' as line break so it doesn't force a blank line on enter
+! //FCKConfig.EnterMode = 'p';
+! //FCKConfig.EnterMode = 'br';
+! FCKConfig.EnterMode = 'div';
+! 
+! // Set our own custom css (sets white background and mono-space font
+! FCKConfig.EditorAreaCSS = FCKConfig.BasePath + '../../../custom_textarea.css' ;
+! 
+! // Don't show the toolbar by default
+! // http://docs.cksource.com/FCKeditor_2.x/Developers_Guide/Configuration/Toolbar
+! FCKConfig.ToolbarStartExpanded = false;
+diff -Ncr testlink-1.9.3.orig/custom_textarea.css testlink-1.9.3/custom_textarea.css
+*** testlink-1.9.3.orig/custom_textarea.css	Wed Dec 31 18:00:00 1969
+--- testlink-1.9.3/custom_textarea.css	Mon Aug 22 15:35:23 2011
+***************
+*** 0 ****
+--- 1,13 ----
++ /* this file is to (hopefully) force the text area to default to a mono-space font */
++ /* this is a copy of gui/themes/default/css/testlink.css with 'Courier New' pushed 
++    to the head of the font family list.  */
++ 
++ 
++ body {
++     background:     #FFF;
++     font-family:    'Courier New', 'Trebuchet MS', Arial, Verdana, sans-serif;
++     font-size:      small;
++     margin:         0px;
++     padding:        0px;
++ }
++ 
+diff -Ncr testlink-1.9.3.orig/gui/templates/testcases/inc_steps.tpl testlink-1.9.3/gui/templates/testcases/inc_steps.tpl
+*** testlink-1.9.3.orig/gui/templates/testcases/inc_steps.tpl	Sat Jul  2 08:33:18 2011
+--- testlink-1.9.3/gui/templates/testcases/inc_steps.tpl	Wed Nov 23 13:29:30 2011
+***************
+*** 45,51 ****
+  	</tr>
+  	{* BUGID 3376 *}
+  	{foreach from=$steps item=step_info}
+! 	<tr id="step_row_{$step_info.step_number}">
+  		<td style="text-align:left;">
+  			<span class="order_info" style='display:none'>
+  			<input type="text" name="step_set[{$step_info.id}]" id="step_set_{$step_info.id}"
+--- 45,51 ----
+  	</tr>
+  	{* BUGID 3376 *}
+  	{foreach from=$steps item=step_info}
+! 	<tr id="step_row_{$step_info.step_number}" class="{cycle values="row_color_1,row_color_2"}">
+  		<td style="text-align:left;">
+  			<span class="order_info" style='display:none'>
+  			<input type="text" name="step_set[{$step_info.id}]" id="step_set_{$step_info.id}"
+***************
+*** 53,62 ****
+  				size="{#STEP_NUMBER_SIZE#}"
+  				maxlength="{#STEP_NUMBER_MAXLEN#}">
+  			{include file="error_icon.tpl" field="step_number"}
+! 			</span>{$step_info.step_number}
+  		</td>
+! 		<td {if $edit_enabled} style="cursor:pointer;" onclick="launchEditStep({$step_info.id})" {/if}>{$step_info.actions}</td>
+! 		<td {if $edit_enabled} style="cursor:pointer;" onclick="launchEditStep({$step_info.id})" {/if}>{$step_info.expected_results}</td>
+  		{if $session['testprojectOptions']->automationEnabled}
+  		<td {if $edit_enabled} style="cursor:pointer;" onclick="launchEditStep({$step_info.id})" {/if}>{$gui->execution_types[$step_info.execution_type]}</td>
+  		{/if}
+--- 53,62 ----
+  				size="{#STEP_NUMBER_SIZE#}"
+  				maxlength="{#STEP_NUMBER_MAXLEN#}">
+  			{include file="error_icon.tpl" field="step_number"}
+! 			</span><div {if $edit_enabled} style="cursor:pointer;" onclick="launchEditStep({$step_info.id})" {/if}>{$step_info.step_number}</div>
+  		</td>
+! 		<td><div class=c_actions>{$step_info.actions}</div></td>
+! 		<td><div class=c_expected_results>{$step_info.expected_results}</div></td>
+  		{if $session['testprojectOptions']->automationEnabled}
+  		<td {if $edit_enabled} style="cursor:pointer;" onclick="launchEditStep({$step_info.id})" {/if}>{$gui->execution_types[$step_info.execution_type]}</td>
+  		{/if}
+***************
+*** 91,104 ****
+  	{/if}
+  	{foreach from=$steps item=step_info}
+  	<tr>
+! 		<th width="25px"><nobr>{$inc_steps_labels.step_number}
+  		<span class="order_info" style='display:none'>
+  		<input type="text" name="step_set[{$step_info.id}]" id="step_set_{$step_info.id}"
+  		       value="{$step_info.step_number}"
+  		       size="{#STEP_NUMBER_SIZE#}"
+  		       maxlength="{#STEP_NUMBER_MAXLEN#}">
+  		{include file="error_icon.tpl" field="step_number"}
+! 		</span>{$step_info.step_number}</nobr></th>
+  		<th>{$inc_steps_labels.step_actions}</th>
+  		{if $session['testprojectOptions']->automationEnabled}
+  		<th>{$inc_steps_labels.execution_type_short_descr}:
+--- 91,106 ----
+  	{/if}
+  	{foreach from=$steps item=step_info}
+  	<tr>
+! 		<th width="25px"><nobr>
+  		<span class="order_info" style='display:none'>
+  		<input type="text" name="step_set[{$step_info.id}]" id="step_set_{$step_info.id}"
+  		       value="{$step_info.step_number}"
+  		       size="{#STEP_NUMBER_SIZE#}"
+  		       maxlength="{#STEP_NUMBER_MAXLEN#}">
+  		{include file="error_icon.tpl" field="step_number"}
+! 		</span><span {if $edit_enabled} style="cursor:pointer;"
+!         onclick="launchEditStep({$step_info.id})"{/if}
+! 		>{$inc_steps_labels.step_number} {$step_info.step_number}</span></nobr></th>
+  		<th>{$inc_steps_labels.step_actions}</th>
+  		{if $session['testprojectOptions']->automationEnabled}
+  		<th>{$inc_steps_labels.execution_type_short_descr}:
+***************
+*** 111,120 ****
+  		{/if}
+  	</tr>
+  	<tr>
+! 		<td>&nbsp;</td>
+! 		<td colspan="2" {if $edit_enabled} style="cursor:pointer;"
+! 		    onclick="launchEditStep({$step_info.id})"{/if}
+! 		    style="padding: 0.5em">{$step_info.actions}</td>
+  		{if $edit_enabled}
+  		<td class="clickable_icon">
+  			<img style="border:none;cursor: pointer;"
+--- 113,120 ----
+  		{/if}
+  	</tr>
+  	<tr>
+! 		<td class="{cycle values="row_color_3,row_color_3,row_color_3,row_color_4,row_color_4,row_color_4"}">&nbsp;</td>
+! 		<td colspan="2" style="padding: 0.5em"><div class=c_actions>{$step_info.actions}</div></td>
+  		{if $edit_enabled}
+  		<td class="clickable_icon">
+  			<img style="border:none;cursor: pointer;"
+***************
+*** 133,145 ****
+  		{/if}
+  	</tr>
+  	<tr>
+! 		<th style="background: transparent; border: none"></th>
+  		<th colspan="2">{$inc_steps_labels.expected_results}</th>
+  	</tr>
+! 	<tr {if $edit_enabled} style="cursor:pointer;"
+! 	    onclick="launchEditStep({$step_info.id})"{/if}>
+! 	    <td>&nbsp;</td>
+! 		<td colspan="2" style="padding: 0.5em 0.5em 2em 0.5em">{$step_info.expected_results}</td>
+  	</tr>
+  	{/foreach}
+  {/if}
+--- 133,145 ----
+  		{/if}
+  	</tr>
+  	<tr>
+! 		<td class="{cycle values="row_color_3,row_color_3,row_color_3,row_color_4,row_color_4,row_color_4"}"></td>
+  		<th colspan="2">{$inc_steps_labels.expected_results}</th>
+  	</tr>
+! 	<tr>
+! 	    <td class="{cycle values="row_color_3,row_color_3,row_color_3,row_color_4,row_color_4,row_color_4"}">&nbsp;</td>
+! 		<td colspan="2" style="padding: 0.5em 0.5em 2em 0.5em">
+! 			<div class=c_expected_results>{$step_info.expected_results}</div></td>
+  	</tr>
+  	{/foreach}
+  {/if}
+diff -Ncr testlink-1.9.3.orig/gui/templates/testcases/tcStepEdit.tpl testlink-1.9.3/gui/templates/testcases/tcStepEdit.tpl
+*** testlink-1.9.3.orig/gui/templates/testcases/tcStepEdit.tpl	Sat Jul  2 08:33:18 2011
+--- testlink-1.9.3/gui/templates/testcases/tcStepEdit.tpl	Wed Nov 23 13:34:29 2011
+***************
+*** 197,203 ****
+    {* this means we have steps to display *}
+    {if $gui->tcaseSteps != ''}
+     	{foreach from=$gui->tcaseSteps item=step_info}
+!   	  <tr id="step_row_{$step_info.step_number}">
+        {if $step_info.step_number == $gui->step_number}
+  		    <td style="text-align:left;">{$gui->step_number}</td>
+    		  <td>{$steps}</td>
+--- 197,203 ----
+    {* this means we have steps to display *}
+    {if $gui->tcaseSteps != ''}
+     	{foreach from=$gui->tcaseSteps item=step_info}
+!   	  <tr id="step_row_{$step_info.step_number}" class="{cycle values="row_color_1,row_color_2"}">
+        {if $step_info.step_number == $gui->step_number}
+  		    <td style="text-align:left;">{$gui->step_number}</td>
+    		  <td>{$steps}</td>
+***************
+*** 211,218 ****
+        	{/if}
+        {else}
+          <td style="text-align:left;"><a href="{$hrefEditStep}{$step_info.id}">{$step_info.step_number}</a></td>
+!   	  	<td ><a href="{$hrefEditStep}{$step_info.id}">{$step_info.actions}</a></td>
+!   	  	<td ><a href="{$hrefEditStep}{$step_info.id}">{$step_info.expected_results}</a></td>
+          {if $session['testprojectOptions']->automationEnabled}
+    	  	  <td><a href="{$hrefEditStep}{$step_info.id}">{$gui->execution_types[$step_info.execution_type]}</a></td>
+    	  	{/if}  
+--- 211,218 ----
+        	{/if}
+        {else}
+          <td style="text-align:left;"><a href="{$hrefEditStep}{$step_info.id}">{$step_info.step_number}</a></td>
+!   	  	<td ><div class=c_actions>{$step_info.actions}</div></td>
+!   	  	<td ><div class=c_expected_results>{$step_info.expected_results}</div></td>
+          {if $session['testprojectOptions']->automationEnabled}
+    	  	  <td><a href="{$hrefEditStep}{$step_info.id}">{$gui->execution_types[$step_info.execution_type]}</a></td>
+    	  	{/if}  
+***************
+*** 223,229 ****
+    {else} {* Vertical layout *}
+  		{foreach from=$gui->tcaseSteps item=step_info}
+  			<tr id="step_row_{$step_info.step_number}">
+! 				<th width="20">{$args_labels.step_number} {$step_info.step_number}</th>
+  				<th>{$labels.step_actions}</th>
+  				{if $session['testprojectOptions']->automationEnabled}
+  					{if $step_info.step_number == $gui->step_number}
+--- 223,229 ----
+    {else} {* Vertical layout *}
+  		{foreach from=$gui->tcaseSteps item=step_info}
+  			<tr id="step_row_{$step_info.step_number}">
+! 				<th width="20"><a href="{$hrefEditStep}{$step_info.id}">{$args_labels.step_number} {$step_info.step_number}</a></th>
+  				<th>{$labels.step_actions}</th>
+  				{if $session['testprojectOptions']->automationEnabled}
+  					{if $step_info.step_number == $gui->step_number}
+***************
+*** 244,267 ****
+  				{/if}
+  			</tr>
+  			<tr>
+! 				<td>&nbsp;</td>
+  				{if $step_info.step_number == $gui->step_number}
+  					<td colspan="2">{$steps}</td>
+  				{else}
+! 					<td colspan="2"><a href="{$hrefEditStep}{$step_info.id}">{$step_info.actions}</a></td>
+  				{/if}
+  			</tr>
+  			<tr>
+! 				<th style="background: transparent; border: none"></th>
+  				<th colspan="2">{$labels.expected_results}</th>
+  			</tr>
+  			<tr>
+! 				<td>&nbsp;</td>
+  				{if $step_info.step_number == $gui->step_number}
+  					<td colspan="2">{$expected_results}</td>
+  				{else}
+  					<td colspan="2" style="padding: 0.5em 0.5em 2em 0.5em">
+! 					<a href="{$hrefEditStep}{$step_info.id}">{$step_info.expected_results}</a></td>
+  				{/if}
+  			</tr>
+  		{/foreach}
+--- 244,267 ----
+  				{/if}
+  			</tr>
+  			<tr>
+! 				<td class="{cycle values="row_color_3,row_color_3,row_color_3,row_color_4,row_color_4,row_color_4"}">&nbsp;</td>
+  				{if $step_info.step_number == $gui->step_number}
+  					<td colspan="2">{$steps}</td>
+  				{else}
+! 					<td colspan="2"><div class=c_actions>{$step_info.actions}</div></td>
+  				{/if}
+  			</tr>
+  			<tr>
+! 				<td class="{cycle values="row_color_3,row_color_3,row_color_3,row_color_4,row_color_4,row_color_4"}"></td>
+  				<th colspan="2">{$labels.expected_results}</th>
+  			</tr>
+  			<tr>
+! 				<td class="{cycle values="row_color_3,row_color_3,row_color_3,row_color_4,row_color_4,row_color_4"}">&nbsp;</td>
+  				{if $step_info.step_number == $gui->step_number}
+  					<td colspan="2">{$expected_results}</td>
+  				{else}
+  					<td colspan="2" style="padding: 0.5em 0.5em 2em 0.5em">
+! 					<div class=c_expected_results>{$step_info.expected_results}</div></td>
+  				{/if}
+  			</tr>
+  		{/foreach}
+diff -Ncr testlink-1.9.3.orig/gui/themes/default/css/custom.css testlink-1.9.3/gui/themes/default/css/custom.css
+*** testlink-1.9.3.orig/gui/themes/default/css/custom.css	Wed Dec 31 18:00:00 1969
+--- testlink-1.9.3/gui/themes/default/css/custom.css	Wed Nov 23 13:30:27 2011
+***************
+*** 0 ****
+--- 1,20 ----
++ .row_color_1 {
++ 	background-color:	#DDDDDD;
++ }
++ 
++ .row_color_2 {
++ 	background-color:	#CCCCCC;
++ }
++ 
++ .row_color_3 {
++ 	background-color:	#555555;
++ }
++ 
++ .row_color_4 {
++ 	background-color:	#AAAAAA;
++ }
++ 
++ div.c_actions, div.c_expected_results {
++ 	font-family: 'Courier New', Courier, monospace;
++ }
++ 

@@ -1,0 +1,114 @@
+diff -cr testlink-1.9.3.orig/lib/api/xmlrpc.class.php testlink-1.9.3/lib/api/xmlrpc.class.php
+*** testlink-1.9.3.orig/lib/api/xmlrpc.class.php	Sat Jul  2 09:33:18 2011
+--- testlink-1.9.3/lib/api/xmlrpc.class.php	Tue May  8 11:11:34 2012
+***************
+*** 176,181 ****
+--- 176,182 ----
+  	public static $testSuiteNameParamName = "testsuitename";
+  	public static $timeStampParamName = "timestamp";
+      public static $titleParamName = "title";
++ 	public static $numexecsParamName = "numexecs";
+  
+  
+      public static $urgencyParamName = "urgency";
+***************
+*** 255,260 ****
+--- 256,262 ----
+  	                            'tl.getBuildsForTestPlan' => 'this:getBuildsForTestPlan',
+  	                            'tl.getLatestBuildForTestPlan' => 'this:getLatestBuildForTestPlan',	
+                                  'tl.getLastExecutionResult' => 'this:getLastExecutionResult',
++ 								'tl.getExecutionResults' => 'this:getExecutionResults',
+  	                            'tl.getTestSuitesForTestPlan' => 'this:getTestSuitesForTestPlan',
+  	                            'tl.getTestSuitesForTestSuite' => 'this:getTestSuitesForTestSuite',
+  	                            'tl.getTestCasesForTestSuite'	=> 'this:getTestCasesForTestSuite',
+***************
+*** 1220,1225 ****
+--- 1222,1297 ----
+  
+  		return $maxbuild;
+  	}
++ 
++ 	/**
++ 	* Gets the result of LAST EXECUTION for a particular testcase
++ 	* on a test plan, but WITHOUT checking for a particular build
++ 	*
++ 	* @param struct $args
++ 	* @param string $args["devKey"]
++ 	* @param int $args["tplanid"]
++ 	* @param int $args["testcaseid"]: optional, if does not is present
++ 	*                                 testcaseexternalid must be present
++ 	*
++ 	* @param int $args["testcaseexternalid"]: optional, if does not is present
++ 	*                                         testcaseid must be present
++ 	* @param int $args["numexecs"]: optional.  If set, number of cases to
++ 	*                               return.  If unset, all will be returned
++ 	*
++ 	* @return mixed $resultInfo
++ 	*               if execution found, array with these keys:
++ 	*               id (execution id),build_id,tester_id,execution_ts,
++ 	*               status,testplan_id,tcversion_id,tcversion_number,
++ 	*               execution_type,notes.
++ 	*
++ 	*               if test case has not been execute,
++ 	*               array('id' => -1)
++ 	*
++ 	* @access public
++ 	*/
++ 	public function getExecutionResults($args)
++ 	{
++ 		$operation=__FUNCTION__;
++ 		$msg_prefix="({$operation}) - ";
++ 		
++ 		$this->_setArgs($args);
++ 		$resultInfo = array();
++ 		$status_ok=true;
++ 		
++ 		// Checks are done in order
++ 		$checkFunctions = array('authenticate','checkTestPlanID','checkTestCaseIdentity');
++ 		
++ 		$status_ok=$this->_runChecks($checkFunctions,$msg_prefix) &&
++ 		           $this->_checkTCIDAndTPIDValid(null,$msg_prefix) &&
++ 		           $this->userHasRight("mgt_view_tc");
++ 		
++ 		if( $status_ok )
++ 		{
++ 			// get all, then return last
++ 			$sql = " SELECT * FROM {$this->tables['executions']} " .
++ 			       " WHERE testplan_id = {$this->args[self::$testPlanIDParamName]} " .
++ 			       " AND tcversion_id IN (" .
++ 			       " SELECT id FROM {$this->tables['nodes_hierarchy']} " .
++ 			       " WHERE parent_id = {$this->args[self::$testCaseIDParamName]})" .
++ 			       " ORDER BY id DESC";
++ 			
++ 			$limit   = $this->args[self::$numexecsParamName] > 0 ? $this->args[self::$numexecsParamName] : -1;
++ 			$records = $this->dbObj->get_recordset($sql, null, $limit);
++ 			
++ 			if(null == $records)
++ 			{
++ 				// has not been executed
++ 				// execution id = -1 => test case has not been runned.
++ 				$resultInfo[]=array('id' => -1);
++ 			}
++ 			else
++ 			{
++ 				$resultInfo = $records;
++ 			}
++ 		}
++ 		
++ 		return $status_ok ? $resultInfo : $this->errors;
++ 	}
+  	
+  	/**
+       * Gets the result of LAST EXECUTION for a particular testcase 
+***************
+*** 4641,4644 ****
+  	} // function end
+  
+  } // class end
+! ?>
+\ No newline at end of file
+--- 4713,4716 ----
+  	} // function end
+  
+  } // class end
+! ?>
